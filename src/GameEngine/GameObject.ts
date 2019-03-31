@@ -1,12 +1,13 @@
 abstract class GameObject {
     
     public readonly id: string;
+    public color: string = "white";
 
     protected transform: Transform;
     protected gameCanvas: HTMLCanvasElement;
     protected canvasContext: CanvasRenderingContext2D;
     protected components: Component[] = [];
-
+    
 
     public constructor(id: string, x: number, y: number, width: number, height: number) {
         this.id = id;
@@ -29,7 +30,7 @@ abstract class GameObject {
     }
 
     public render(): void {
-        this.canvasContext.fillStyle = "white";
+        this.canvasContext.fillStyle = this.color;
         this.canvasContext.fillRect(this.transform.position.x, this.transform.position.y, this.transform.width, this.transform.height);
     }
 

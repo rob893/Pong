@@ -4,7 +4,8 @@ class ComputerMotor extends Motor {
 
     private ballTransform: Transform;
     private timer: number = 0;
-    private midField: number;
+    private quarterFieldX: number;
+    private midFieldY: number;
 
 
     public constructor(gameObject: GameObject) {
@@ -17,7 +18,8 @@ class ComputerMotor extends Motor {
         super.start();
 
         this.ballTransform = GameEngine.Instance.getGameObjectById("ball").getTransform();
-        this.midField = this.gameCanvas.width / 2;
+        this.quarterFieldX = this.gameCanvas.width / 4;
+        this.midFieldY = this.gameCanvas.height / 2;
     }
 
     protected handleOutOfBounds(): void {
@@ -30,22 +32,33 @@ class ComputerMotor extends Motor {
     }
 
     protected move(): void {
-        if(this.ballTransform.position.x < this.midField) {
-            this.yVelocity = 0;
-            return;
-        }
-
-        this.timer += Time.DeltaTime;
-
-        if(this.timer > 0.25) {
-            if(this.transform.getCenter().y < this.ballTransform.getCenter().y) {
+        if(this.ballTransform.position.x < this.quarterFieldX) {
+            if(this.transform.position.y > this.midFieldY + 5) {
+                this.yVelocity = -1;
+            }
+            else if(this.transform.position.y < this.midFieldY - 5) {
                 this.yVelocity = 1;
             }
             else {
-                this.yVelocity = -1;
+                this.yVelocity = 0;
             }
+        }
+        else {
+            this.timer += Time.DeltaTime;
 
-            this.timer = 0;
+            if(this.timer > 0.15) {
+                if(this.transform.getCenter().y < this.ballTransform.getCenter().y - 10) {
+                    this.yVelocity = 1;
+                }
+                else if (this.transform.getCenter().y > this.ballTransform.getCenter().y + 10){
+                    this.yVelocity = -1;
+                }
+                else {
+                    this.yVelocity = 0;
+                }
+    
+                this.timer = 0;
+            }
         }
 
         this.transform.translate(this.xVelocity, this.yVelocity, this.speed);

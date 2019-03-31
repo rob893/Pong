@@ -1,20 +1,30 @@
 class GameEngine {
     constructor() {
         this.gameObjects = [];
+        this.gameInitialized = false;
+        this.paused = false;
         document.getElementById("print-button").addEventListener("click", () => this.printGameData());
+        document.getElementById("pause-button").addEventListener("click", () => this.togglePause());
+        this.gameInitialized = false;
     }
     static get Instance() {
         return this.instance || (this.instance = new GameEngine());
     }
-    setGameObjects(gameObjects) {
-        this.gameObjects = gameObjects;
+    initializeGame(gameCanvas, gameObjects) {
+        this.setGameCanvas(gameCanvas);
+        this.setGameObjects(gameObjects);
+        this.gameInitialized = true;
+    }
+    startGame() {
+        if (!this.gameInitialized) {
+            throw new Error("The game is not initialized yet!");
+        }
+        Time.start();
+        this.paused = false;
         for (let i = 0; i < gameObjects.length; i++) {
             gameObjects[i].start();
         }
-    }
-    setGameCanvas(gameCanvas) {
-        this.gameCanvas = gameCanvas;
-        this.canvasContext = this.gameCanvas.getContext("2d");
+        requestAnimationFrame(() => this.gameLoop());
     }
     getGameObjectById(id) {
         for (let i = 0; i < this.gameObjects.length; i++) {
@@ -31,9 +41,20 @@ class GameEngine {
         return this.canvasContext;
     }
     printGameData() {
-        console.log(player);
-        console.log(ball);
-        console.log(computer);
+        console.log(Time.TotalTime);
+        for (let i = 0; i < this.gameObjects.length; i++) {
+            console.log(this.gameObjects[i]);
+        }
+    }
+    togglePause() {
+        this.paused = !this.paused;
+    }
+    setGameCanvas(gameCanvas) {
+        this.gameCanvas = gameCanvas;
+        this.canvasContext = this.gameCanvas.getContext("2d");
+    }
+    setGameObjects(gameObjects) {
+        this.gameObjects = gameObjects;
     }
     update() {
         Time.updateTime();
@@ -49,13 +70,16 @@ class GameEngine {
         }
     }
     gameLoop() {
-        this.update();
-        this.renderGameObjects();
+        if (!this.paused) {
+            this.update();
+            this.renderGameObjects();
+        }
         requestAnimationFrame(() => this.gameLoop());
     }
 }
 class GameObject {
     constructor(id, x, y, width, height) {
+        this.color = "white";
         this.components = [];
         this.id = id;
         this.transform = new Transform(this, x, y, width, height);
@@ -73,7 +97,7 @@ class GameObject {
         }
     }
     render() {
-        this.canvasContext.fillStyle = "white";
+        this.canvasContext.fillStyle = this.color;
         this.canvasContext.fillRect(this.transform.position.x, this.transform.position.y, this.transform.width, this.transform.height);
     }
     getTransform() {
@@ -184,17 +208,20 @@ class Time {
     static get DeltaTime() {
         return this.deltaTime;
     }
+    static get TotalTime() {
+        return (Date.now() - this.startTime) / 1000;
+    }
+    static start() {
+        this.prevTime = Date.now();
+        this.startTime = this.prevTime;
+    }
     static updateTime() {
-        if (this.prevTime === 0) {
-            this.prevTime = Date.now();
-        }
-        else {
-            this.deltaTime = (Date.now() - this.prevTime) / 1000;
-            this.prevTime = Date.now();
-        }
+        this.deltaTime = (Date.now() - this.prevTime) / 1000;
+        this.prevTime = Date.now();
     }
 }
 Time.deltaTime = 0;
+Time.startTime = 0;
 Time.prevTime = 0;
 class Vector2 {
     constructor(x, y) {
@@ -266,9 +293,11 @@ class BallMotor extends Motor {
     handleCollisions() {
         if (this.collider.detectCollision(this.playerCollider)) {
             this.xVelocity = 1;
+            this.speed += 0.125;
         }
         else if (this.collider.detectCollision(this.computerCollider)) {
             this.xVelocity = -1;
+            this.speed += 0.125;
         }
     }
 }
@@ -281,7 +310,8 @@ class ComputerMotor extends Motor {
     start() {
         super.start();
         this.ballTransform = GameEngine.Instance.getGameObjectById("ball").getTransform();
-        this.midField = this.gameCanvas.width / 2;
+        this.quarterFieldX = this.gameCanvas.width / 4;
+        this.midFieldY = this.gameCanvas.height / 2;
     }
     handleOutOfBounds() {
         if (this.transform.position.y <= 0) {
@@ -292,19 +322,31 @@ class ComputerMotor extends Motor {
         }
     }
     move() {
-        if (this.ballTransform.position.x < this.midField) {
-            this.yVelocity = 0;
-            return;
-        }
-        this.timer += Time.DeltaTime;
-        if (this.timer > 0.25) {
-            if (this.transform.getCenter().y < this.ballTransform.getCenter().y) {
+        if (this.ballTransform.position.x < this.quarterFieldX) {
+            if (this.transform.position.y > this.midFieldY + 5) {
+                this.yVelocity = -1;
+            }
+            else if (this.transform.position.y < this.midFieldY - 5) {
                 this.yVelocity = 1;
             }
             else {
-                this.yVelocity = -1;
+                this.yVelocity = 0;
             }
-            this.timer = 0;
+        }
+        else {
+            this.timer += Time.DeltaTime;
+            if (this.timer > 0.15) {
+                if (this.transform.getCenter().y < this.ballTransform.getCenter().y - 10) {
+                    this.yVelocity = 1;
+                }
+                else if (this.transform.getCenter().y > this.ballTransform.getCenter().y + 10) {
+                    this.yVelocity = -1;
+                }
+                else {
+                    this.yVelocity = 0;
+                }
+                this.timer = 0;
+            }
         }
         this.transform.translate(this.xVelocity, this.yVelocity, this.speed);
     }
@@ -316,6 +358,10 @@ class PlayerMotor extends Motor {
         this.movingDown = false;
         document.addEventListener('keydown', () => this.onKeyDown(event));
         document.addEventListener('keyup', () => this.onKeyUp(event));
+        document.getElementById("white-button").addEventListener("click", () => { this.gameObject.color = "white"; });
+        document.getElementById("red-button").addEventListener("click", () => { this.gameObject.color = "red"; });
+        document.getElementById("blue-button").addEventListener("click", () => { this.gameObject.color = "blue"; });
+        document.getElementById("green-button").addEventListener("click", () => { this.gameObject.color = "green"; });
     }
     handleOutOfBounds() {
         if (this.transform.position.y <= 0) {
@@ -386,11 +432,10 @@ class Player extends GameObject {
 }
 let gameEngine = GameEngine.Instance;
 let gameCanvas = document.getElementById("game-canvas");
-gameEngine.setGameCanvas(gameCanvas);
 let player = new Player("player");
 let ball = new Ball("ball");
 let computer = new Computer("computer");
 let gameObjects = [player, computer, ball];
-gameEngine.setGameObjects(gameObjects);
-requestAnimationFrame(() => gameEngine.gameLoop());
+gameEngine.initializeGame(gameCanvas, gameObjects);
+gameEngine.startGame();
 //# sourceMappingURL=game.js.map

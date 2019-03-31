@@ -5,27 +5,41 @@ class GameEngine {
     private gameCanvas: HTMLCanvasElement;
     private canvasContext: CanvasRenderingContext2D;
     private gameObjects: GameObject[] = [];
+    private gameInitialized: boolean = false;
+    private paused: boolean = false;
 
 
     private constructor() {
         document.getElementById("print-button").addEventListener("click", () => this.printGameData());
+        document.getElementById("pause-button").addEventListener("click", () => this.togglePause());
+        this.gameInitialized = false;
     }
 
     public static get Instance(): GameEngine {
         return this.instance || (this.instance = new GameEngine());
     }
 
-    public setGameObjects(gameObjects: GameObject[]): void {
-        this.gameObjects = gameObjects;
+    public initializeGame(gameCanvas: HTMLCanvasElement, gameObjects: GameObject[]): void {
+        this.setGameCanvas(gameCanvas);
+        this.setGameObjects(gameObjects);
+
+        this.gameInitialized = true;
+    }
+
+    public startGame(): void {
+
+        if(!this.gameInitialized) {
+            throw new Error("The game is not initialized yet!");
+        }
+
+        Time.start();
+        this.paused = false;
 
         for(let i: number = 0; i < gameObjects.length; i++) {
             gameObjects[i].start();
         }
-    }
 
-    public setGameCanvas(gameCanvas: HTMLCanvasElement): void {
-        this.gameCanvas = gameCanvas;
-        this.canvasContext = this.gameCanvas.getContext("2d");
+        requestAnimationFrame(() => this.gameLoop());
     }
 
     public getGameObjectById(id: string): GameObject {
@@ -46,10 +60,25 @@ class GameEngine {
         return this.canvasContext;
     }
 
-    private printGameData(): void {
-        console.log(player);
-        console.log(ball);
-        console.log(computer);
+    public printGameData(): void {
+        console.log(Time.TotalTime);
+
+        for(let i: number = 0; i < this.gameObjects.length; i++) {
+            console.log(this.gameObjects[i]);
+        }
+    }
+
+    public togglePause(): void {
+        this.paused = !this.paused;
+    }
+
+    private setGameCanvas(gameCanvas: HTMLCanvasElement): void {
+        this.gameCanvas = gameCanvas;
+        this.canvasContext = this.gameCanvas.getContext("2d");
+    }
+
+    private setGameObjects(gameObjects: GameObject[]): void {
+        this.gameObjects = gameObjects;
     }
 
     private update(): void {
@@ -69,9 +98,12 @@ class GameEngine {
         }
     }
 
-    public gameLoop(): void {
-        this.update();
-        this.renderGameObjects();
+    private gameLoop(): void {
+        if(!this.paused) {
+            this.update();
+            this.renderGameObjects();
+        }
+       
         requestAnimationFrame(() => this.gameLoop());
     }
 }

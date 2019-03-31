@@ -57,9 +57,11 @@ class BallMotor extends Motor {
     private handleCollisions(): void {
         if(this.collider.detectCollision(this.playerCollider)) {
             this.xVelocity = 1;
+            this.speed += 0.125;
         }
         else if(this.collider.detectCollision(this.computerCollider)) {
             this.xVelocity = -1;
+            this.speed += 0.125;
         }
     }
 }

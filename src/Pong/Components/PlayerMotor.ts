@@ -11,6 +11,11 @@ class PlayerMotor extends Motor {
 
         document.addEventListener('keydown', () => this.onKeyDown(<KeyboardEvent>event));
         document.addEventListener('keyup', () => this.onKeyUp(<KeyboardEvent>event));
+
+        document.getElementById("white-button").addEventListener("click", () => { this.gameObject.color = "white"; });
+        document.getElementById("red-button").addEventListener("click", () => { this.gameObject.color = "red"; });
+        document.getElementById("blue-button").addEventListener("click", () => { this.gameObject.color = "blue"; });
+        document.getElementById("green-button").addEventListener("click", () => { this.gameObject.color = "green"; });
     }
 
     protected handleOutOfBounds(): void {
