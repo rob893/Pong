@@ -1,0 +1,3 @@
+interface IObserver {
+    receiveObservableUpdate(): void;
+}
