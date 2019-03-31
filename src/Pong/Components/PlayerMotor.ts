@@ -14,11 +14,11 @@ class PlayerMotor extends Motor {
     }
 
     protected handleOutOfBounds(): void {
-        if(this.transform.y <= 0) {
-            this.transform.y = 0;
+        if(this.transform.position.y <= 0) {
+            this.transform.position.y = 0;
         }
-        else if(this.transform.y + this.transform.height >= this.gameCanvas.height) {
-            this.transform.y = this.gameCanvas.height - this.transform.height;
+        else if(this.transform.position.y + this.transform.height >= this.gameCanvas.height) {
+            this.transform.position.y = this.gameCanvas.height - this.transform.height;
         }
     }
 

@@ -30,7 +30,7 @@ abstract class GameObject {
 
     public render(): void {
         this.canvasContext.fillStyle = "white";
-        this.canvasContext.fillRect(this.transform.x, this.transform.y, this.transform.width, this.transform.height);
+        this.canvasContext.fillRect(this.transform.position.x, this.transform.position.y, this.transform.width, this.transform.height);
     }
 
     public getTransform(): Transform {

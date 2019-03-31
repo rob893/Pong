@@ -53,6 +53,8 @@ class GameEngine {
     }
 
     private update(): void {
+        Time.updateTime();
+        
         for(let i: number = 0; i < this.gameObjects.length; i++){
             this.gameObjects[i].update();
         }

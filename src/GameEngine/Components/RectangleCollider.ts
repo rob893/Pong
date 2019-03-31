@@ -14,10 +14,10 @@ class RectangleCollider extends Component implements IObserver {
         this.transform = gameObject.getTransform();
         let transform: Transform = this.transform;
         transform.registerObserver(this);
-        this.topLeft = new Vector2(transform.x, transform.y);
-        this.topRight = new Vector2(transform.x + transform.width, transform.y);
-        this.bottomLeft = new Vector2(transform.x, transform.y + transform.height);
-        this.bottomRight = new Vector2(transform.x + transform.width, transform.y + transform.height);
+        this.topLeft = new Vector2(transform.position.x, transform.position.y);
+        this.topRight = new Vector2(transform.position.x + transform.width, transform.position.y);
+        this.bottomLeft = new Vector2(transform.position.x, transform.position.y + transform.height);
+        this.bottomRight = new Vector2(transform.position.x + transform.width, transform.position.y + transform.height);
     }
 
     public detectCollision(other: RectangleCollider): boolean {
@@ -31,13 +31,13 @@ class RectangleCollider extends Component implements IObserver {
     }
 
     public receiveObservableUpdate(): void {
-        this.topLeft.x = this.transform.x;
-        this.topLeft.y = this.transform.y;
-        this.topRight.x = this.transform.x + this.transform.width;
-        this.topRight.y = this.transform.y;
-        this.bottomLeft.x = this.transform.x;
-        this.bottomLeft.y = this.transform.y + this.transform.height;
-        this.bottomRight.x = this.transform.x + this.transform.width;
-        this.bottomRight.y = this.transform.y + this.transform.height;
+        this.topLeft.x = this.transform.position.x;
+        this.topLeft.y = this.transform.position.y;
+        this.topRight.x = this.transform.position.x + this.transform.width;
+        this.topRight.y = this.transform.position.y;
+        this.bottomLeft.x = this.transform.position.x;
+        this.bottomLeft.y = this.transform.position.y + this.transform.height;
+        this.bottomRight.x = this.transform.position.x + this.transform.width;
+        this.bottomRight.y = this.transform.position.y + this.transform.height;
     }
 }

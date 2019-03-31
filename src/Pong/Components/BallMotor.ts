@@ -28,17 +28,17 @@ class BallMotor extends Motor {
     }
 
     protected handleOutOfBounds(): void {
-        if(this.transform.y <= 0) {
+        if(this.transform.position.y <= 0) {
             this.yVelocity = Math.abs(this.yVelocity);
         }
-        else if(this.transform.y >= this.gameCanvas.height - this.transform.height) {
+        else if(this.transform.position.y >= this.gameCanvas.height - this.transform.height) {
             this.yVelocity *= -1;
         }
 
-        if(this.transform.x <= 0) {
+        if(this.transform.position.x + this.transform.width <= 0) {
             this.reset();
         }
-        else if(this.transform.x >= this.gameCanvas.width) {
+        else if(this.transform.position.x >= this.gameCanvas.width) {
             this.reset();
         }
     }
@@ -48,8 +48,7 @@ class BallMotor extends Motor {
     }
 
     private reset(): void {
-        this.transform.x = 345;
-        this.transform.y = 195;
+        this.transform.setPosition(345, 195);
         this.xVelocity = Math.random() < 0.5 ? -1 : 1;
         this.yVelocity = Math.random() < 0.5 ? -1 : 1;
         this.speed = 3;
@@ -57,10 +56,10 @@ class BallMotor extends Motor {
 
     private handleCollisions(): void {
         if(this.collider.detectCollision(this.playerCollider)) {
-            this.xVelocity = Math.abs(this.xVelocity);
+            this.xVelocity = 1;
         }
         else if(this.collider.detectCollision(this.computerCollider)) {
-            this.xVelocity *= -1;
+            this.xVelocity = -1;
         }
     }
 }
