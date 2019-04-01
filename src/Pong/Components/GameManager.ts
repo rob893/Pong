@@ -2,12 +2,24 @@ class GameManager extends Component {
 
     private static instance: GameManager;
 
+    private player: Player;
+
 
     private constructor(componentName: string, gameObject: GameObject) {
         super(componentName, gameObject);
 
         document.getElementById("print-button").addEventListener("click", () => this.printGameData());
         document.getElementById("pause-button").addEventListener("click", () => this.togglePause());
+        document.getElementById("add-ball").addEventListener("click", () => this.testInstantiate());
+    }
+
+    public start(): void {
+        this.player = GameEngine.Instance.getGameObjectById("player");
+        
+        document.getElementById("white-button").addEventListener("click", () => this.setPlayerColor("white"));
+        document.getElementById("red-button").addEventListener("click", () => this.setPlayerColor("red"));
+        document.getElementById("blue-button").addEventListener("click", () => this.setPlayerColor("blue"));
+        document.getElementById("green-button").addEventListener("click", () => this.setPlayerColor("green"));
     }
 
     public static get Instance(): GameManager {
@@ -33,5 +45,13 @@ class GameManager extends Component {
 
     private printGameData(): void {
         GameEngine.Instance.printGameData();
+    }
+
+    private testInstantiate(): void {
+        GameEngine.Instance.instantiate(new Ball("ball2"));
+    }
+
+    private setPlayerColor(color: string): void {
+        this.player.color = color;
     }
 }

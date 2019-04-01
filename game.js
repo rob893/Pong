@@ -376,9 +376,17 @@ class GameManager extends Component {
         super(componentName, gameObject);
         document.getElementById("print-button").addEventListener("click", () => this.printGameData());
         document.getElementById("pause-button").addEventListener("click", () => this.togglePause());
+        document.getElementById("add-ball").addEventListener("click", () => this.testInstantiate());
+    }
+    start() {
+        this.player = GameEngine.Instance.getGameObjectById("player");
+        document.getElementById("white-button").addEventListener("click", () => this.setPlayerColor("white"));
+        document.getElementById("red-button").addEventListener("click", () => this.setPlayerColor("red"));
+        document.getElementById("blue-button").addEventListener("click", () => this.setPlayerColor("blue"));
+        document.getElementById("green-button").addEventListener("click", () => this.setPlayerColor("green"));
     }
     static get Instance() {
-        if (this.instance === null) {
+        if (this.instance === null || this.instance === undefined) {
             throw new Error("GameManager has not been created yet. Use the createInstance method first.");
         }
         return this.instance;
@@ -396,6 +404,12 @@ class GameManager extends Component {
     printGameData() {
         GameEngine.Instance.printGameData();
     }
+    testInstantiate() {
+        GameEngine.Instance.instantiate(new Ball("ball2"));
+    }
+    setPlayerColor(color) {
+        this.player.color = color;
+    }
 }
 class PlayerMotor extends Motor {
     constructor(gameObject) {
@@ -404,11 +418,6 @@ class PlayerMotor extends Motor {
         this.movingDown = false;
         document.addEventListener('keydown', () => this.onKeyDown(event));
         document.addEventListener('keyup', () => this.onKeyUp(event));
-        document.getElementById("white-button").addEventListener("click", () => { this.gameObject.color = "white"; });
-        document.getElementById("red-button").addEventListener("click", () => { this.gameObject.color = "red"; });
-        document.getElementById("blue-button").addEventListener("click", () => { this.gameObject.color = "blue"; });
-        document.getElementById("green-button").addEventListener("click", () => { this.gameObject.color = "green"; });
-        document.getElementById("add-ball").addEventListener("click", () => this.testInstantiate());
     }
     handleOutOfBounds() {
         if (this.transform.position.y <= 0) {
@@ -417,9 +426,6 @@ class PlayerMotor extends Motor {
         else if (this.transform.position.y + this.transform.height >= this.gameCanvas.height) {
             this.transform.position.y = this.gameCanvas.height - this.transform.height;
         }
-    }
-    testInstantiate() {
-        GameEngine.Instance.instantiate(new Ball("ball2"));
     }
     move() {
         if (this.movingUp) {
