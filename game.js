@@ -3,8 +3,6 @@ class GameEngine {
         this.gameObjects = [];
         this.gameInitialized = false;
         this.paused = false;
-        document.getElementById("print-button").addEventListener("click", () => this.printGameData());
-        document.getElementById("pause-button").addEventListener("click", () => this.togglePause());
         this.gameInitialized = false;
     }
     static get Instance() {
@@ -373,6 +371,32 @@ class ComputerMotor extends Motor {
         this.transform.translate(this.xVelocity, this.yVelocity, this.speed);
     }
 }
+class GameManager extends Component {
+    constructor(componentName, gameObject) {
+        super(componentName, gameObject);
+        document.getElementById("print-button").addEventListener("click", () => this.printGameData());
+        document.getElementById("pause-button").addEventListener("click", () => this.togglePause());
+    }
+    static get Instance() {
+        if (this.instance === null) {
+            throw new Error("GameManager has not been created yet. Use the createInstance method first.");
+        }
+        return this.instance;
+    }
+    static createInstance(componentName, gameObject) {
+        if (this.instance === null || this.instance === undefined) {
+            this.instance = new GameManager(componentName, gameObject);
+            return this.instance;
+        }
+        throw new Error("More than one GameManager cannot be created!");
+    }
+    togglePause() {
+        GameEngine.Instance.togglePause();
+    }
+    printGameData() {
+        GameEngine.Instance.printGameData();
+    }
+}
 class PlayerMotor extends Motor {
     constructor(gameObject) {
         super("PlayerMotor", gameObject);
@@ -447,6 +471,15 @@ class Computer extends GameObject {
         this.setComponents(computerComponents);
     }
 }
+class GameManagerObject extends GameObject {
+    constructor(id) {
+        super(id, 0, 0, 0, 0);
+        let gameManagerComponents = [];
+        let gameManager = GameManager.createInstance(id, this);
+        gameManagerComponents.push(gameManager);
+        this.setComponents(gameManagerComponents);
+    }
+}
 class Player extends GameObject {
     constructor(id) {
         super(id, 2, 175, 10, 50);
@@ -458,10 +491,11 @@ class Player extends GameObject {
 }
 let gameEngine = GameEngine.Instance;
 let gameCanvas = document.getElementById("game-canvas");
+let gameManager = new GameManagerObject("GameManager");
 let player = new Player("player");
 let ball = new Ball("ball");
 let computer = new Computer("computer");
-let gameObjects = [player, computer, ball];
+let gameObjects = [gameManager, player, computer, ball];
 gameEngine.initializeGame(gameCanvas, gameObjects);
 gameEngine.startGame();
 //# sourceMappingURL=game.js.map

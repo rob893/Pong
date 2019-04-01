@@ -10,8 +10,6 @@ class GameEngine {
 
 
     private constructor() {
-        document.getElementById("print-button").addEventListener("click", () => this.printGameData());
-        document.getElementById("pause-button").addEventListener("click", () => this.togglePause());
         this.gameInitialized = false;
     }
 
