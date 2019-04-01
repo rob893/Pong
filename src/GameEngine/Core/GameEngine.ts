@@ -42,6 +42,13 @@ class GameEngine {
         requestAnimationFrame(() => this.gameLoop());
     }
 
+    public instantiate(newGameObject: GameObject): GameObject {
+        this.gameObjects.push(newGameObject);
+        newGameObject.start();
+        
+        return newGameObject;
+    }
+
     public getGameObjectById(id: string): GameObject {
         for(let i: number = 0; i < this.gameObjects.length; i++) {
             if(gameObjects[i].id === id) {
@@ -61,7 +68,8 @@ class GameEngine {
     }
 
     public printGameData(): void {
-        console.log(Time.TotalTime);
+        console.log(this);
+        console.log("Time since game start " + Time.TotalTime + "s");
 
         for(let i: number = 0; i < this.gameObjects.length; i++) {
             console.log(this.gameObjects[i]);

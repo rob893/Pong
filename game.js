@@ -26,6 +26,11 @@ class GameEngine {
         }
         requestAnimationFrame(() => this.gameLoop());
     }
+    instantiate(newGameObject) {
+        this.gameObjects.push(newGameObject);
+        newGameObject.start();
+        return newGameObject;
+    }
     getGameObjectById(id) {
         for (let i = 0; i < this.gameObjects.length; i++) {
             if (gameObjects[i].id === id) {
@@ -41,7 +46,8 @@ class GameEngine {
         return this.canvasContext;
     }
     printGameData() {
-        console.log(Time.TotalTime);
+        console.log(this);
+        console.log("Time since game start " + Time.TotalTime + "s");
         for (let i = 0; i < this.gameObjects.length; i++) {
             console.log(this.gameObjects[i]);
         }
@@ -78,7 +84,7 @@ class GameEngine {
     }
 }
 class GameObject {
-    constructor(id, x, y, width, height) {
+    constructor(id, x = 0, y = 0, width = 0, height = 0) {
         this.color = "white";
         this.components = [];
         this.id = id;
@@ -119,91 +125,6 @@ class GameObject {
         this.components = components;
     }
 }
-class Component {
-    constructor(componentName, gameObject) {
-        this.gameObject = gameObject;
-        this.componentName = componentName;
-    }
-    start() { }
-    ;
-    update() { }
-    ;
-}
-class RectangleCollider extends Component {
-    constructor(gameObject) {
-        super("RectangleCollider", gameObject);
-        this.transform = gameObject.getTransform();
-        let transform = this.transform;
-        transform.registerObserver(this);
-        this.topLeft = new Vector2(transform.position.x, transform.position.y);
-        this.topRight = new Vector2(transform.position.x + transform.width, transform.position.y);
-        this.bottomLeft = new Vector2(transform.position.x, transform.position.y + transform.height);
-        this.bottomRight = new Vector2(transform.position.x + transform.width, transform.position.y + transform.height);
-    }
-    detectCollision(other) {
-        return !(other.topLeft.x > this.topRight.x ||
-            other.topRight.x < this.topLeft.x ||
-            other.topLeft.y > this.bottomLeft.y ||
-            other.bottomLeft.y < this.topLeft.y);
-    }
-    receiveObservableUpdate() {
-        this.topLeft.x = this.transform.position.x;
-        this.topLeft.y = this.transform.position.y;
-        this.topRight.x = this.transform.position.x + this.transform.width;
-        this.topRight.y = this.transform.position.y;
-        this.bottomLeft.x = this.transform.position.x;
-        this.bottomLeft.y = this.transform.position.y + this.transform.height;
-        this.bottomRight.x = this.transform.position.x + this.transform.width;
-        this.bottomRight.y = this.transform.position.y + this.transform.height;
-    }
-}
-class Transform extends Component {
-    constructor(gameObject, x, y, width, height) {
-        super("Transform", gameObject);
-        this.width = 0;
-        this.height = 0;
-        this.observers = [];
-        this.width = width;
-        this.height = height;
-        this.position = new Vector2(x, y);
-    }
-    translate(xVelocity, yVelocity, speed) {
-        this.position.x += xVelocity * speed;
-        this.position.y += yVelocity * speed;
-        this.notifyObservers();
-    }
-    setPosition(x, y) {
-        this.position.x = x;
-        this.position.y = y;
-        this.notifyObservers();
-    }
-    getCenter() {
-        return new Vector2(this.position.x + (this.width / 2), this.position.y + (this.height / 2));
-    }
-    getBottomCenter() {
-        return new Vector2(this.position.x + (this.width / 2), this.position.y + this.height);
-    }
-    registerObserver(observer) {
-        this.observers.push(observer);
-    }
-    removeObserver(observer) {
-        for (let i = 0; i < this.observers.length; i++) {
-            if (this.observers[i] === observer) {
-                this.observers.splice(i, 1);
-            }
-        }
-    }
-    notifyObservers() {
-        for (let i = 0; i < this.observers.length; i++) {
-            this.observers[i].receiveObservableUpdate();
-        }
-    }
-}
-var Keys;
-(function (Keys) {
-    Keys[Keys["UP"] = 38] = "UP";
-    Keys[Keys["DOWN"] = 40] = "DOWN";
-})(Keys || (Keys = {}));
 class Time {
     static get DeltaTime() {
         return this.deltaTime;
@@ -236,6 +157,104 @@ class Vector2 {
         return Math.sqrt((distanceX * distanceX) + (distanceY * distanceY));
     }
 }
+var Keys;
+(function (Keys) {
+    Keys[Keys["UP"] = 38] = "UP";
+    Keys[Keys["DOWN"] = 40] = "DOWN";
+})(Keys || (Keys = {}));
+class LiteEvent {
+    constructor() {
+        this.handlers = [];
+    }
+    add(handler) {
+        this.handlers.push(handler);
+    }
+    remove(handler) {
+        this.handlers = this.handlers.filter(h => h !== handler);
+    }
+    trigger(data) {
+        this.handlers.slice(0).forEach(h => h(data));
+    }
+    expose() {
+        return this;
+    }
+}
+class Component {
+    constructor(componentName, gameObject) {
+        this.gameObject = gameObject;
+        this.componentName = componentName;
+    }
+    start() { }
+    ;
+    update() { }
+    ;
+}
+class RectangleCollider extends Component {
+    constructor(gameObject) {
+        super("RectangleCollider", gameObject);
+        this.onCollide = new LiteEvent();
+        this.transform = gameObject.getTransform();
+        let transform = this.transform;
+        transform.onMoved.add(() => this.onTransformMoved());
+        this.topLeft = new Vector2(transform.position.x, transform.position.y);
+        this.topRight = new Vector2(transform.position.x + transform.width, transform.position.y);
+        this.bottomLeft = new Vector2(transform.position.x, transform.position.y + transform.height);
+        this.bottomRight = new Vector2(transform.position.x + transform.width, transform.position.y + transform.height);
+    }
+    detectCollision(other) {
+        if (!(other.topLeft.x > this.topRight.x ||
+            other.topRight.x < this.topLeft.x ||
+            other.topLeft.y > this.bottomLeft.y ||
+            other.bottomLeft.y < this.topLeft.y)) {
+            this.onCollide.trigger(other);
+            return true;
+        }
+        return false;
+    }
+    get onCollided() {
+        return this.onCollide.expose();
+    }
+    onTransformMoved() {
+        this.topLeft.x = this.transform.position.x;
+        this.topLeft.y = this.transform.position.y;
+        this.topRight.x = this.transform.position.x + this.transform.width;
+        this.topRight.y = this.transform.position.y;
+        this.bottomLeft.x = this.transform.position.x;
+        this.bottomLeft.y = this.transform.position.y + this.transform.height;
+        this.bottomRight.x = this.transform.position.x + this.transform.width;
+        this.bottomRight.y = this.transform.position.y + this.transform.height;
+    }
+}
+class Transform extends Component {
+    constructor(gameObject, x, y, width, height) {
+        super("Transform", gameObject);
+        this.width = 0;
+        this.height = 0;
+        this.onMove = new LiteEvent();
+        this.width = width;
+        this.height = height;
+        this.position = new Vector2(x, y);
+    }
+    translate(xVelocity, yVelocity, speed) {
+        this.position.x += xVelocity * speed;
+        this.position.y += yVelocity * speed;
+        this.onMove.trigger();
+    }
+    setPosition(x, y) {
+        this.position.x = x;
+        this.position.y = y;
+        this.onMove.trigger();
+    }
+    get onMoved() {
+        return this.onMove.expose();
+    }
+    getCenter() {
+        return new Vector2(this.position.x + (this.width / 2), this.position.y + (this.height / 2));
+    }
+    getBottomCenter() {
+        return new Vector2(this.position.x + (this.width / 2), this.position.y + this.height);
+    }
+}
 class Motor extends Component {
     constructor(componentName, gameObject) {
         super(componentName, gameObject);
@@ -266,6 +285,9 @@ class BallMotor extends Motor {
     update() {
         super.update();
         this.handleCollisions();
+    }
+    whoIHit(other) {
+        console.log("I hit " + other.gameObject.id);
     }
     handleOutOfBounds() {
         if (this.transform.position.y <= 0) {
@@ -362,6 +384,7 @@ class PlayerMotor extends Motor {
         document.getElementById("red-button").addEventListener("click", () => { this.gameObject.color = "red"; });
         document.getElementById("blue-button").addEventListener("click", () => { this.gameObject.color = "blue"; });
         document.getElementById("green-button").addEventListener("click", () => { this.gameObject.color = "green"; });
+        document.getElementById("add-ball").addEventListener("click", () => this.testInstantiate());
     }
     handleOutOfBounds() {
         if (this.transform.position.y <= 0) {
@@ -370,6 +393,9 @@ class PlayerMotor extends Motor {
         else if (this.transform.position.y + this.transform.height >= this.gameCanvas.height) {
             this.transform.position.y = this.gameCanvas.height - this.transform.height;
         }
+    }
+    testInstantiate() {
+        GameEngine.Instance.instantiate(new Ball("ball2"));
     }
     move() {
         if (this.movingUp) {

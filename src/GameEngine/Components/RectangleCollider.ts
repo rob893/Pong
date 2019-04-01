@@ -1,11 +1,12 @@
-class RectangleCollider extends Component implements IObserver {
+class RectangleCollider extends Component {
 
     public topLeft: Vector2;
     public topRight: Vector2;
     public bottomLeft: Vector2;
     public bottomRight: Vector2;
-
     public readonly transform: Transform;
+
+    private readonly onCollide = new LiteEvent<RectangleCollider>();
 
 
     public constructor(gameObject: GameObject) {
@@ -13,7 +14,9 @@ class RectangleCollider extends Component implements IObserver {
 
         this.transform = gameObject.getTransform();
         let transform: Transform = this.transform;
-        transform.registerObserver(this);
+
+        transform.onMoved.add(() => this.onTransformMoved());
+
         this.topLeft = new Vector2(transform.position.x, transform.position.y);
         this.topRight = new Vector2(transform.position.x + transform.width, transform.position.y);
         this.bottomLeft = new Vector2(transform.position.x, transform.position.y + transform.height);
@@ -22,15 +25,23 @@ class RectangleCollider extends Component implements IObserver {
 
     public detectCollision(other: RectangleCollider): boolean {
         
-        return !(
-            other.topLeft.x > this.topRight.x ||
+        if(!(other.topLeft.x > this.topRight.x ||
             other.topRight.x < this.topLeft.x ||
             other.topLeft.y > this.bottomLeft.y ||
-            other.bottomLeft.y < this.topLeft.y
-        );
+            other.bottomLeft.y < this.topLeft.y)) {
+            this.onCollide.trigger(other);
+                
+            return true;
+        }
+        
+        return false;
     }
 
-    public receiveObservableUpdate(): void {
+    public get onCollided() { 
+        return this.onCollide.expose(); 
+    }
+
+    public onTransformMoved(): void {
         this.topLeft.x = this.transform.position.x;
         this.topLeft.y = this.transform.position.y;
         this.topRight.x = this.transform.position.x + this.transform.width;

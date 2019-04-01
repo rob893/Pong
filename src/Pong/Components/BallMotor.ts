@@ -19,12 +19,18 @@ class BallMotor extends Motor {
         this.collider = this.gameObject.getComponent<RectangleCollider>("RectangleCollider");
         this.playerCollider = GameEngine.Instance.getGameObjectById("player").getComponent<RectangleCollider>("RectangleCollider");
         this.computerCollider = GameEngine.Instance.getGameObjectById("computer").getComponent<RectangleCollider>("RectangleCollider");
+
+        //this.collider.onCollided.add((other: RectangleCollider) => this.whoIHit(other));
     }
 
     public update(): void {
         super.update();
         
         this.handleCollisions();
+    }
+
+    private whoIHit(other: RectangleCollider): void {
+        console.log("I hit " + other.gameObject.id);
     }
 
     protected handleOutOfBounds(): void {

@@ -16,6 +16,7 @@ class PlayerMotor extends Motor {
         document.getElementById("red-button").addEventListener("click", () => { this.gameObject.color = "red"; });
         document.getElementById("blue-button").addEventListener("click", () => { this.gameObject.color = "blue"; });
         document.getElementById("green-button").addEventListener("click", () => { this.gameObject.color = "green"; });
+        document.getElementById("add-ball").addEventListener("click", () => this.testInstantiate());
     }
 
     protected handleOutOfBounds(): void {
@@ -25,6 +26,10 @@ class PlayerMotor extends Motor {
         else if(this.transform.position.y + this.transform.height >= this.gameCanvas.height) {
             this.transform.position.y = this.gameCanvas.height - this.transform.height;
         }
+    }
+
+    private testInstantiate() {
+        GameEngine.Instance.instantiate(new Ball("ball2"));
     }
 
     protected move(): void {

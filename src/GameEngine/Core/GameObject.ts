@@ -9,7 +9,7 @@ abstract class GameObject {
     protected components: Component[] = [];
     
 
-    public constructor(id: string, x: number, y: number, width: number, height: number) {
+    public constructor(id: string, x: number = 0, y: number = 0, width: number = 0, height: number = 0) {
         this.id = id;
         this.transform = new Transform(this, x, y, width, height);
     }

@@ -10,7 +10,8 @@
         "target": "ES6"
     },
     "include": [
-        "src/GameEngine/**/*",
+        "src/GameEngine/Core/**/*",
+        "src/GameEngine/Components/**/*",
         "src/Pong/Components/**/*",
         "src/Pong/GameObjects/**/*",
         "src/Pong/game.ts"
