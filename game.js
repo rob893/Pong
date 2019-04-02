@@ -187,6 +187,42 @@ class Component {
     update() { }
     ;
 }
+class Animator extends Component {
+    constructor(gameObject, spriteSheetURL, numberOfFrames) {
+        super("Animator", gameObject);
+        this.ticksPerFrame = 1;
+        this.spriteReady = false;
+        this.spriteSheet = new Image();
+        this.spriteSheet.src = spriteSheetURL;
+        this.spriteSheet.onload = () => { this.spriteReady = true; };
+        this.numberOfFrames = numberOfFrames;
+    }
+    start() {
+        this.canvasContext = this.gameObject.getGameCanvas().getContext("2d");
+        this.transform = this.gameObject.getTransform();
+    }
+    update() {
+        this.drawSprite();
+    }
+    drawSprite() {
+        if (!this.spriteReady) {
+            return;
+        }
+        this.tickCount = this.ticksPerFrame;
+        if (this.tickCount >= this.ticksPerFrame) {
+            this.tickCount = 0;
+            if (this.frameIndex < this.numberOfFrames - 1) {
+                this.frameIndex += 1;
+            }
+            else {
+                this.frameIndex = 0;
+            }
+        }
+        this.frameHeight = this.spriteSheet.height;
+        this.frameWidth = this.spriteSheet.width / this.numberOfFrames;
+        this.canvasContext.drawImage(this.spriteSheet, this.frameIndex * this.frameWidth, 0, this.frameWidth, this.frameHeight, this.transform.position.x, this.transform.position.y, 15, 20);
+    }
+}
 class RectangleCollider extends Component {
     constructor(gameObject) {
         super("RectangleCollider", gameObject);

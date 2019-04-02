@@ -7,6 +7,7 @@ class Player extends GameObject {
         
         playerComponents.push(new RectangleCollider(this));
         playerComponents.push(new PlayerMotor(this));
+        //playerComponents.push(new Animator(this, "./src/Pong/Resources/mario.png", 4)); //From where the out file is
 
         this.setComponents(playerComponents);
     }
