@@ -1,7 +1,6 @@
 abstract class GameObject {
     
     public readonly id: string;
-    public color: string = "white";
 
     protected transform: Transform;
     protected gameCanvas: HTMLCanvasElement;
@@ -27,11 +26,6 @@ abstract class GameObject {
         for(let i: number = 0; i < this.components.length; i++) {
             this.components[i].update();
         }
-    }
-
-    public render(): void {
-        this.canvasContext.fillStyle = this.color;
-        this.canvasContext.fillRect(this.transform.position.x, this.transform.position.y, this.transform.width, this.transform.height);
     }
 
     public getTransform(): Transform {

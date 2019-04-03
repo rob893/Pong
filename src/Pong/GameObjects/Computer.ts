@@ -7,6 +7,7 @@ class Computer extends GameObject {
         
         computerComponents.push(new RectangleCollider(this));
         computerComponents.push(new ComputerMotor(this));
+        computerComponents.push(new RectangleRenderer(this, "white"));
 
         this.setComponents(computerComponents);
     }

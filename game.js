@@ -66,24 +66,21 @@ class GameEngine {
             this.gameObjects[i].update();
         }
     }
-    renderGameObjects() {
+    renderBackground() {
+        this.canvasContext.clearRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
         this.canvasContext.fillStyle = "black";
         this.canvasContext.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
-        for (let i = 0; i < this.gameObjects.length; i++) {
-            this.gameObjects[i].render();
-        }
     }
     gameLoop() {
         if (!this.paused) {
+            this.renderBackground();
             this.update();
-            this.renderGameObjects();
         }
         requestAnimationFrame(() => this.gameLoop());
     }
 }
 class GameObject {
     constructor(id, x = 0, y = 0, width = 0, height = 0) {
-        this.color = "white";
         this.components = [];
         this.id = id;
         this.transform = new Transform(this, x, y, width, height);
@@ -99,10 +96,6 @@ class GameObject {
         for (let i = 0; i < this.components.length; i++) {
             this.components[i].update();
         }
-    }
-    render() {
-        this.canvasContext.fillStyle = this.color;
-        this.canvasContext.fillRect(this.transform.position.x, this.transform.position.y, this.transform.width, this.transform.height);
     }
     getTransform() {
         return this.transform;
@@ -257,6 +250,27 @@ class RectangleCollider extends Component {
         this.bottomLeft.y = this.transform.position.y + this.transform.height;
         this.bottomRight.x = this.transform.position.x + this.transform.width;
         this.bottomRight.y = this.transform.position.y + this.transform.height;
+    }
+}
+class RectangleRenderer extends Component {
+    constructor(gameObject, color) {
+        super("RectangleRenderer", gameObject);
+        this.transform = gameObject.getTransform();
+        this.color = color;
+    }
+    start() {
+        this.gameCanvas = this.gameObject.getGameCanvas();
+        this.canvasContext = this.gameCanvas.getContext("2d");
+    }
+    update() {
+        this.render();
+    }
+    setColor(color) {
+        this.color = color;
+    }
+    render() {
+        this.canvasContext.fillStyle = this.color;
+        this.canvasContext.fillRect(this.transform.position.x, this.transform.position.y, this.transform.width, this.transform.height);
     }
 }
 class Transform extends Component {
@@ -416,6 +430,12 @@ class GameManager extends Component {
     }
     start() {
         this.player = GameEngine.Instance.getGameObjectById("player");
+        try {
+            this.playerRenderer = this.player.getComponent("RectangleRenderer");
+        }
+        catch (_a) {
+            console.log("The player does not have a rectangle renderer!");
+        }
         document.getElementById("white-button").addEventListener("click", () => this.setPlayerColor("white"));
         document.getElementById("red-button").addEventListener("click", () => this.setPlayerColor("red"));
         document.getElementById("blue-button").addEventListener("click", () => this.setPlayerColor("blue"));
@@ -444,7 +464,7 @@ class GameManager extends Component {
         GameEngine.Instance.instantiate(new Ball("ball2"));
     }
     setPlayerColor(color) {
-        this.player.color = color;
+        this.playerRenderer.setColor(color);
     }
 }
 class PlayerMotor extends Motor {
@@ -501,6 +521,7 @@ class Ball extends GameObject {
         let ballComponents = [];
         ballComponents.push(new RectangleCollider(this));
         ballComponents.push(new BallMotor(this));
+        ballComponents.push(new RectangleRenderer(this, "white"));
         this.setComponents(ballComponents);
     }
 }
@@ -510,6 +531,7 @@ class Computer extends GameObject {
         let computerComponents = [];
         computerComponents.push(new RectangleCollider(this));
         computerComponents.push(new ComputerMotor(this));
+        computerComponents.push(new RectangleRenderer(this, "white"));
         this.setComponents(computerComponents);
     }
 }
@@ -528,6 +550,7 @@ class Player extends GameObject {
         let playerComponents = [];
         playerComponents.push(new RectangleCollider(this));
         playerComponents.push(new PlayerMotor(this));
+        playerComponents.push(new Animator(this, "./src/Pong/Resources/mario.png", 4));
         this.setComponents(playerComponents);
     }
 }

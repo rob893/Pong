@@ -7,6 +7,7 @@ class Ball extends GameObject {
         
         ballComponents.push(new RectangleCollider(this));
         ballComponents.push(new BallMotor(this));
+        ballComponents.push(new RectangleRenderer(this, "white"));
 
         this.setComponents(ballComponents);
     }

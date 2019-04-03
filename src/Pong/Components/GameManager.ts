@@ -3,6 +3,7 @@ class GameManager extends Component {
     private static instance: GameManager;
 
     private player: Player;
+    private playerRenderer: RectangleRenderer;
 
 
     private constructor(componentName: string, gameObject: GameObject) {
@@ -15,7 +16,15 @@ class GameManager extends Component {
 
     public start(): void {
         this.player = GameEngine.Instance.getGameObjectById("player");
+
+        try {
+            this.playerRenderer = this.player.getComponent<RectangleRenderer>("RectangleRenderer");
+        }
+        catch{
+            console.log("The player does not have a rectangle renderer!");
+        }
         
+
         document.getElementById("white-button").addEventListener("click", () => this.setPlayerColor("white"));
         document.getElementById("red-button").addEventListener("click", () => this.setPlayerColor("red"));
         document.getElementById("blue-button").addEventListener("click", () => this.setPlayerColor("blue"));
@@ -52,6 +61,6 @@ class GameManager extends Component {
     }
 
     private setPlayerColor(color: string): void {
-        this.player.color = color;
+        this.playerRenderer.setColor(color);
     }
 }

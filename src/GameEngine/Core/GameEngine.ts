@@ -20,7 +20,7 @@ class GameEngine {
     public initializeGame(gameCanvas: HTMLCanvasElement, gameObjects: GameObject[]): void {
         this.setGameCanvas(gameCanvas);
         this.setGameObjects(gameObjects);
-
+         
         this.gameInitialized = true;
     }
 
@@ -95,19 +95,16 @@ class GameEngine {
         }
     }
 
-    private renderGameObjects(): void {
-        this.canvasContext.fillStyle = "black"; 
+    private renderBackground(): void {
+        this.canvasContext.clearRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
+        this.canvasContext.fillStyle = "black";
         this.canvasContext.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
-
-        for(let i: number = 0; i < this.gameObjects.length; i++){
-            this.gameObjects[i].render();
-        }
     }
 
     private gameLoop(): void {
         if(!this.paused) {
+            this.renderBackground();
             this.update();
-            this.renderGameObjects();
         }
        
         requestAnimationFrame(() => this.gameLoop());
