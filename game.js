@@ -181,14 +181,21 @@ class Component {
     ;
 }
 class Animator extends Component {
-    constructor(gameObject, spriteSheetURL, numberOfFrames) {
+    constructor(gameObject, spriteSheetURL, numberOfFrames, numberOfRows) {
         super("Animator", gameObject);
-        this.ticksPerFrame = 1;
+        this.frameWidth = 0;
+        this.frameHeight = 0;
+        this.numberOfFrames = 0;
+        this.numberOfRows = 0;
+        this.frameIndex = 0;
+        this.framesPerAnimationFrame = 10;
+        this.animationFrameCount = 0;
         this.spriteReady = false;
         this.spriteSheet = new Image();
         this.spriteSheet.src = spriteSheetURL;
         this.spriteSheet.onload = () => { this.spriteReady = true; };
         this.numberOfFrames = numberOfFrames;
+        this.numberOfRows = numberOfRows;
     }
     start() {
         this.canvasContext = this.gameObject.getGameCanvas().getContext("2d");
@@ -197,23 +204,21 @@ class Animator extends Component {
     update() {
         this.drawSprite();
     }
+    setAnimationSpeed(numberOfFramesPerAnimationFrame) {
+        this.framesPerAnimationFrame = numberOfFramesPerAnimationFrame;
+    }
     drawSprite() {
         if (!this.spriteReady) {
             return;
         }
-        this.tickCount = this.ticksPerFrame;
-        if (this.tickCount >= this.ticksPerFrame) {
-            this.tickCount = 0;
-            if (this.frameIndex < this.numberOfFrames - 1) {
-                this.frameIndex += 1;
-            }
-            else {
-                this.frameIndex = 0;
-            }
+        this.animationFrameCount++;
+        if (this.animationFrameCount >= this.framesPerAnimationFrame) {
+            this.frameIndex = (this.frameIndex + 1) % this.numberOfFrames;
+            this.animationFrameCount = 0;
         }
-        this.frameHeight = this.spriteSheet.height;
+        this.frameHeight = this.spriteSheet.height / this.numberOfRows;
         this.frameWidth = this.spriteSheet.width / this.numberOfFrames;
-        this.canvasContext.drawImage(this.spriteSheet, this.frameIndex * this.frameWidth, 0, this.frameWidth, this.frameHeight, this.transform.position.x, this.transform.position.y, 15, 20);
+        this.canvasContext.drawImage(this.spriteSheet, this.frameIndex * this.frameWidth, 0, this.frameWidth, this.frameHeight, this.transform.position.x, this.transform.position.y, this.transform.width, this.transform.height);
     }
 }
 class RectangleCollider extends Component {
@@ -550,7 +555,7 @@ class Player extends GameObject {
         let playerComponents = [];
         playerComponents.push(new RectangleCollider(this));
         playerComponents.push(new PlayerMotor(this));
-        playerComponents.push(new Animator(this, "./src/Pong/Resources/mario.png", 4));
+        playerComponents.push(new Animator(this, "./src/Pong/Resources/mario.png", 4, 1));
         this.setComponents(playerComponents);
     }
 }

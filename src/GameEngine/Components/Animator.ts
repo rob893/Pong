@@ -2,25 +2,27 @@
 
 class Animator extends Component {
 
-    private frameWidth: number;
-    private frameHeight: number;
-    private numberOfFrames: number;
-    private frameIndex: number;
-    private tickCount: number;
-    private ticksPerFrame: number = 1;
+    private frameWidth: number = 0;
+    private frameHeight: number = 0;
+    private numberOfFrames: number = 0;
+    private numberOfRows: number = 0;
+    private frameIndex: number = 0;
+    private framesPerAnimationFrame: number = 10;
+    private animationFrameCount: number = 0;
     private spriteSheet: HTMLImageElement;
     private canvasContext: CanvasRenderingContext2D;
     private transform: Transform;
     private spriteReady: boolean;
 
 
-    public constructor(gameObject: GameObject, spriteSheetURL: string, numberOfFrames: number) {
+    public constructor(gameObject: GameObject, spriteSheetURL: string, numberOfFrames: number, numberOfRows: number) {
         super("Animator", gameObject);
         this.spriteReady = false;
         this.spriteSheet = new Image();
         this.spriteSheet.src = spriteSheetURL;
         this.spriteSheet.onload = () => { this.spriteReady = true; };
         this.numberOfFrames = numberOfFrames;
+        this.numberOfRows = numberOfRows;
     }
 
     public start(): void {
@@ -32,31 +34,29 @@ class Animator extends Component {
         this.drawSprite();
     }
 
+    public setAnimationSpeed(numberOfFramesPerAnimationFrame: number) {
+        this.framesPerAnimationFrame = numberOfFramesPerAnimationFrame;
+    }
+
     private drawSprite(): void {
         
         if(!this.spriteReady) {
             return;
         }
 
-        this.tickCount = this.ticksPerFrame;
+        this.animationFrameCount++;
 
-        if (this.tickCount >= this.ticksPerFrame) {
-            this.tickCount = 0;
-            if (this.frameIndex < this.numberOfFrames - 1) {
-                this.frameIndex += 1;
-            } else {
-                this.frameIndex = 0;
-            }
+        if(this.animationFrameCount >= this.framesPerAnimationFrame) {
+            this.frameIndex = (this.frameIndex + 1) % this.numberOfFrames;
+            this.animationFrameCount = 0;
         }
 
-        this.frameHeight = this.spriteSheet.height;
+        this.frameHeight = this.spriteSheet.height / this.numberOfRows;
         this.frameWidth = this.spriteSheet.width / this.numberOfFrames;
 
-        //this.position.setWidth(this.frameWidth);
-        //this.position.getHeight(this.frameHeight);
         this.canvasContext.drawImage(this.spriteSheet,
             this.frameIndex * this.frameWidth, 0,   // Start of slice
             this.frameWidth, this.frameHeight, // Size of slice
-            this.transform.position.x, this.transform.position.y, 15, 20);
+            this.transform.position.x, this.transform.position.y, this.transform.width, this.transform.height);
     }
 }
