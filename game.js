@@ -470,14 +470,14 @@ class GameManager extends Component {
         this.player = GameEngine.Instance.getGameObjectById("player");
         try {
             this.playerRenderer = this.player.getComponent("RectangleRenderer");
+            document.getElementById("white-button").addEventListener("click", () => this.setPlayerColor("white"));
+            document.getElementById("red-button").addEventListener("click", () => this.setPlayerColor("red"));
+            document.getElementById("blue-button").addEventListener("click", () => this.setPlayerColor("blue"));
+            document.getElementById("green-button").addEventListener("click", () => this.setPlayerColor("green"));
         }
         catch (_a) {
             console.log("The player does not have a rectangle renderer!");
         }
-        document.getElementById("white-button").addEventListener("click", () => this.setPlayerColor("white"));
-        document.getElementById("red-button").addEventListener("click", () => this.setPlayerColor("red"));
-        document.getElementById("blue-button").addEventListener("click", () => this.setPlayerColor("blue"));
-        document.getElementById("green-button").addEventListener("click", () => this.setPlayerColor("green"));
     }
     static get Instance() {
         if (this.instance === null || this.instance === undefined) {
@@ -588,7 +588,7 @@ class Player extends GameObject {
         let playerComponents = [];
         playerComponents.push(new RectangleCollider(this));
         playerComponents.push(new PlayerMotor(this));
-        playerComponents.push(new Animator(this, "./src/Pong/Resources/mario.png", 4, 1));
+        playerComponents.push(new RectangleRenderer(this, "white"));
         this.setComponents(playerComponents);
     }
 }

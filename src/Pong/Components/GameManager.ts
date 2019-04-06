@@ -19,16 +19,15 @@ class GameManager extends Component {
 
         try {
             this.playerRenderer = this.player.getComponent<RectangleRenderer>("RectangleRenderer");
+
+            document.getElementById("white-button").addEventListener("click", () => this.setPlayerColor("white"));
+            document.getElementById("red-button").addEventListener("click", () => this.setPlayerColor("red"));
+            document.getElementById("blue-button").addEventListener("click", () => this.setPlayerColor("blue"));
+            document.getElementById("green-button").addEventListener("click", () => this.setPlayerColor("green"));
         }
         catch{
             console.log("The player does not have a rectangle renderer!");
         }
-        
-
-        document.getElementById("white-button").addEventListener("click", () => this.setPlayerColor("white"));
-        document.getElementById("red-button").addEventListener("click", () => this.setPlayerColor("red"));
-        document.getElementById("blue-button").addEventListener("click", () => this.setPlayerColor("blue"));
-        document.getElementById("green-button").addEventListener("click", () => this.setPlayerColor("green"));
     }
 
     public static get Instance(): GameManager {
