@@ -4,6 +4,7 @@ class GameEngine {
 
     private gameCanvas: HTMLCanvasElement;
     private canvasContext: CanvasRenderingContext2D;
+    private physicsEngine: Physics;
     private gameObjects: GameObject[] = [];
     private gameInitialized: boolean = false;
     private paused: boolean = false;
@@ -11,6 +12,7 @@ class GameEngine {
 
     private constructor() {
         this.gameInitialized = false;
+        this.physicsEngine = Physics.Instance;
     }
 
     public static get Instance(): GameEngine {
@@ -89,6 +91,7 @@ class GameEngine {
 
     private update(): void {
         Time.updateTime();
+        this.physicsEngine.updatePhysics();
         
         for(let i: number = 0; i < this.gameObjects.length; i++){
             this.gameObjects[i].update();

@@ -4,6 +4,7 @@ class GameEngine {
         this.gameInitialized = false;
         this.paused = false;
         this.gameInitialized = false;
+        this.physicsEngine = Physics.Instance;
     }
     static get Instance() {
         return this.instance || (this.instance = new GameEngine());
@@ -62,6 +63,7 @@ class GameEngine {
     }
     update() {
         Time.updateTime();
+        this.physicsEngine.updatePhysics();
         for (let i = 0; i < this.gameObjects.length; i++) {
             this.gameObjects[i].update();
         }
@@ -115,6 +117,27 @@ class GameObject {
     setComponents(components) {
         this.components = components;
     }
+}
+class Physics {
+    constructor() {
+        this.rigidbodies = [];
+        this.colliders = [];
+        this.gravity = 1;
+    }
+    static get Instance() {
+        return this.instance || (this.instance = new Physics());
+    }
+    updatePhysics() {
+        for (let i = 0, l = this.rigidbodies.length; i < l; i++) {
+            this.rigidbodies[i].addGravity(this.gravity);
+        }
+    }
+    addRigidbody(rb) {
+        this.rigidbodies.push(rb);
+    }
+    static raycast() { }
+    static sphereCast() { }
+    static overlapSphere() { return []; }
 }
 class Time {
     static get DeltaTime() {
@@ -276,6 +299,16 @@ class RectangleRenderer extends Component {
     render() {
         this.canvasContext.fillStyle = this.color;
         this.canvasContext.fillRect(this.transform.position.x, this.transform.position.y, this.transform.width, this.transform.height);
+    }
+}
+class Rigidbody extends Component {
+    constructor(gameObject) {
+        super("Rigidbody", gameObject);
+        this.transform = gameObject.getTransform();
+        Physics.Instance.addRigidbody(this);
+    }
+    addGravity(force) {
+        this.transform.translate(0, 1, force);
     }
 }
 class Transform extends Component {
